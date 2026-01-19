@@ -136,39 +136,103 @@ Examples:
 
 ---
 
-## 7) Order of operations (the plan from here)
-This is the “don’t get stuck” progression.
+## 7) Complete order of operations (end-to-end)
+This is the full project flow from “blank NetBox” to a stable, maintainable SoT + validation loop. It’s designed to prevent early churn and avoid discovery/import chaos.
 
-### Phase 1 — Populate core infrastructure (next)
-1. Create **core devices** in NetBox (firewall, core switch, APs, key access switches)
-2. Assign **role**, **device type**, **location**
-3. Record primary **management IP/MAC** for each
-4. Add only the **critical interfaces** first (uplinks/trunks/management)
+### Phase 0 — Foundation and guardrails (do first)
+1. **Decide scope boundaries**
+   - What counts as “infrastructure” vs “inventory”
+   - Stationary IP/MAC devices: yes (as needed)
+   - Portable endpoints: no (for now)
+2. **Lock naming standards**
+   - Device naming: `ROLE-LOC-DETAIL-NN`
+   - Location code strategy (neutral, stable; no personal names)
+   - Interface naming strategy (vendor-native physical; standardize logical; use descriptions)
+3. **NetBox access and safety**
+   - Confirm admin access, backups of NetBox DB/volumes (at least a snapshot)
+   - Confirm you can export objects (CSV/JSON) for safety
+
+### Phase 1 — NetBox skeleton (zero-regret objects)
+4. **Create Site(s)**
+   - Start with one: `Home`
+5. **Create Locations (hierarchy)**
+   - Parent: `Inside`, `Outside`
+   - Optional structure: floors → rooms; zones outside
+   - Add bedroom locations as neutral codes (e.g., `Bedroom 1` / `BED1`) when infrastructure exists
+6. **Create Device Roles**
+   - Core switch, access switch, firewall/router, AP, server, VM host, IoT, camera, UPS, etc.
+7. **Create Manufacturers**
+   - Real vendors + “Generic” where appropriate
+8. **Create Device Types**
+   - Model-level entries (don’t encode role/location here)
+   - Add interface templates later if/when you want precision
 
 Definition of done:
-- You can point at NetBox and say: “This is my core network, intentionally.”
+- NetBox can represent *where things are* and *what categories they belong to* without adding any real devices yet.
 
-### Phase 2 — IPAM + VLAN intent
-1. Define VLANs (names, IDs, purposes)
-2. Define prefixes (per VLAN/subnet)
-3. Define gateways/SVIs (intent first; tie to devices later)
+### Phase 2 — Populate core infrastructure (small, high value)
+9. **Create the “core” devices first**
+   - Firewall/router (Firewalla)
+   - Core switch (5406zl)
+   - A couple of access switches
+   - Primary AP(s)
+10. **Assign identity properly**
+   - Device name per standard
+   - Role, device type, location
+   - Primary management IP (and MAC where useful)
+11. **Add only critical interfaces**
+   - Uplinks, trunks, management
+   - Use interface descriptions for human meaning (“Uplink to SW-MDF-CORE-01 Gi1/0/48”)
 
 Definition of done:
-- NetBox clearly explains “what subnets exist and why.”
+- NetBox describes your **core network** in a way that matches your mental model.
 
-### Phase 3 — Validation loop (NetBox vs reality)
-1. Use LibreNMS to compare discovered devices to NetBox inventory
-2. Fill gaps (new NetBox entries) or suppress noise (ignore churn)
-3. Use Oxidized to ensure config backups exist for the devices that matter
+### Phase 3 — IPAM and VLAN intent (NetBox shines here)
+12. **Define VLANs**
+   - VLAN ID + purpose (Users, IoT, Cameras, Guest, Lab, etc.)
+13. **Define prefixes (subnets) per VLAN**
+   - Track DHCP vs static ranges, reservations intent
+14. **Define gateways / SVIs (intent)**
+   - Tie to the L3 device(s) when you’re ready (or document intent first)
 
 Definition of done:
-- Drift becomes visible and manageable.
+- You can answer: “What subnets exist and why?” from NetBox alone.
 
-### Phase 4 — Nice-to-haves (later)
-- Racks, patch panels, cable modeling
-- Documentation views, diagrams
-- Lightweight automation/sync (NetBox → LibreNMS/Oxidized inventories)
-- GitHub versioning for “intended state” changes
+### Phase 4 — Expand device population (iterative)
+15. **Add the next tier of devices**
+   - Remaining switches, APs, NAS, servers, UPS, cameras
+16. **Add stationary IoT that matters**
+   - Only the ones that meet the “worth tracking” rule (static/reserved IP, persistent MAC, you care if it disappears)
+17. **Refine interfaces gradually**
+   - Don’t model every port on day one
+   - Add detail where it pays off (uplinks, PoE cameras, key wired endpoints)
+
+Definition of done:
+- NetBox is *useful daily* without feeling like homework.
+
+### Phase 5 — Validation loop (reality vs intent)
+18. **LibreNMS reconciliation**
+   - Compare device lists; identify undocumented devices
+   - Confirm hostnames/IPs match NetBox intent
+19. **Oxidized coverage**
+   - Ensure configs exist for the devices you care about
+   - Use diffs as drift signals, not as “truth”
+20. **Drift workflow**
+   - If reality differs: either update NetBox intent (planned change) or remediate device config (unplanned drift)
+
+Definition of done:
+- Your environment becomes self-correcting: NetBox defines intent; sensors highlight drift.
+
+### Phase 6 — Optional deepening (only if it’s worth it)
+21. **Racks / patch panels / cable modeling**
+22. **Interface templates for device types**
+23. **Lightweight automation**
+   - NetBox → LibreNMS inventory assist
+   - NetBox → Oxidized device list assist
+   - Always reversible, always diffable
+
+Definition of done:
+- Automation accelerates order, not chaos.
 
 ---
 
@@ -180,13 +244,3 @@ Automation is allowed only when:
 
 Otherwise, automation just accelerates chaos.
 
----
-
-## 9) Appendix: “new chat” bootstrap prompt (copy/paste)
-Paste this into a new ChatGPT chat to resume without re-explaining:
-
-> **Context:** I’m building a home/homelab Source of Truth using NetBox, with LibreNMS as a reality sensor and Oxidized as a config archive. NetBox owns intended state; LibreNMS/Oxidized observe actual state.  
-> **Progress:** Site + Locations (Inside/Outside + indoor hierarchy) created; device roles created; manufacturers/device types started.  
-> **Standards:** IT-style naming (ROLE-LOC-DETAIL-NN), neutral room codes (BED1/BED2, no personal names), vendor-native physical interface names; logical interface conventions; descriptions carry human meaning.  
-> **Next steps I want:** Help me populate core devices (firewall, core switch, access switches, APs), then design VLAN/IPAM intent, then reconcile against LibreNMS and ensure Oxidized coverage.  
-> **Constraint:** Work step-by-step; don’t advance until I confirm.
