@@ -1,33 +1,104 @@
 # HomeLab
 
-A public overview of my HomeLab and how I built some of the elements.  I have a full near-enterprise network stack at home and over Christmas had to debug a few things.  On my list was to build out a monitoring system, a config backup system like RANCID and an IPAM host.  And thus began my rabbit hole into docker containers.  These appealed because I wanted something 'quick to deploy and configure', and there are a lot of great resources out there now.
+This repository is a public overview of my HomeLab and how I’ve built and evolved various components over time.
 
-I originally started out with just a docker setup on a fresh Ubuntu install when I discovered Portainer - since then I've discovered all kinds of Docker managers but I liked Portainer and stuck with it (the scope was already growing and was out of crontrol.
+At home, I run a near–enterprise-style network stack. Over the holidays, I found myself debugging several systems and decided it was time to formalize a few missing pieces:
 
-My existing enviroment:
+- Centralized monitoring
+- Network configuration backups (RANCID-style)
+- An IPAM / Source of Truth
 
-Portainer host http://Docker01.local:9000/ (9999:9999 and 9000:9000) - 
-dropit 3333:3333 - dropit is... - https://github.com/rmarles/HomeLab/tree/main/DropIt
-homebox 3100:7745 - homebox is... - https://github.com/rmarles/HomeLab/tree/main/HomeBox
-netbox 8100:8000 - netbox is an IPAM solution - https://github.com/rmarles/HomeLab/tree/main/NetBox
-picard 5900:5900 and 5800:5800 - picard is .. - https://github.com/rmarles/HomeLab/tree/main/Picard
-librenms+oxidized 3300:8000 - librenms is a monitoring system, oxidized pulls config logs similar to rancid, and flows them to librenms + pushes them to github. - https://github.com/rmarles/HomeLab/tree/main/Oxidized-LibreNMS
-tandoor 8090:8080 - still working on this. https://github.com/rmarles/HomeLab/tree/main/tandoor
-nginx-proxy - reverse proxy to map hostname:ports to friendly names - https://github.com/rmarles/HomeLab/tree/main/nginx-proxy
+That quickly led me down the Docker container rabbit hole. Containers appealed to me because they are quick to deploy, easy to iterate on, and have an excellent ecosystem of community projects and documentation.
 
-Upcoming \ Plans
-* Implement SSL Certs
-* SAML SSO using Authentik or Entra ID - not sure yet.
-* Fix Tandoor
-* Fix DropIt
-* Shlink
-* Linkwarden
-* Proxmox Lab on Docker03.local
-* Control Pane - managing Docker01, 02 and 03 some the same instance
+I originally started with a single Docker host running on a fresh Ubuntu install. Once I discovered **Portainer**, it became my primary management interface. While I’ve since explored other Docker management tools, Portainer struck the right balance of power and simplicity, and by that point the scope of the lab was already growing rapidly.
 
-I am considering making a public facing instance for publishing workloads to the internet.  I may move stuff like Tandoor to the edge once I get it working.
+---
 
-Also considering a public facing listserv for my car club.
+## Naming & Standards
 
-... That and creating a HamLab on Docker02.local repo and putting the ham related items there
+To keep things consistent and manageable as the environment grows, I maintain documented naming standards:
 
+- **[NamingConventions.md](./NamingConventions.md)**
+
+This covers hostnames, services, and device naming across the HomeLab.
+
+---
+
+## Current Environment
+
+The following services are currently deployed, primarily on `Docker01.local`, and managed through Portainer.
+
+### Core Management
+
+- **Portainer**  
+  Docker management UI  
+  - URL: `http://Docker01.local:9000`  
+  - Ports: `9000`, `9999`
+
+- **Nginx Proxy Manager**  
+  Reverse proxy to map `hostname:port` combinations to friendly DNS names  
+  - Repo: **[nginx-proxy](./nginx-proxy)**
+
+---
+
+### Services & Applications
+
+- **DropIt**  
+  File drop / sharing utility (work in progress)  
+  - Port: `3333`  
+  - Repo: **[DropIt](./DropIt)**
+
+- **HomeBox**  
+  Home inventory and asset tracking  
+  - Ports: `3100 → 7745`  
+  - Repo: **[HomeBox](./HomeBox)**
+
+- **NetBox**  
+  IPAM and Source of Truth  
+  - Ports: `8100 → 8000`  
+  - Repo: **[NetBox](./NetBox)**
+
+- **Picard**  
+  Media tagging and organization  
+  - Ports: `5900`, `5800`  
+  - Repo: **[Picard](./Picard)**
+
+- **LibreNMS + Oxidized**  
+  Network monitoring and configuration backups  
+  - LibreNMS provides monitoring and alerting  
+  - Oxidized pulls device configurations (RANCID-style), feeds them into LibreNMS, and pushes backups to GitHub  
+  - Ports: `3300 → 8000`  
+  - Repo: **[Oxidized-LibreNMS](./Oxidized-LibreNMS)**
+
+- **Tandoor**  
+  Recipe management (currently under active troubleshooting)  
+  - Ports: `8090 → 8080`  
+  - Repo: **[tandoor](./tandoor)**
+
+---
+
+## Upcoming / Planned Work
+
+- Implement SSL certificates across services
+- SAML / SSO integration (Authentik or Entra ID – TBD)
+- Fix and stabilize:
+  - Tandoor
+  - DropIt
+- Deploy additional services:
+  - Shlink
+  - Linkwarden
+- Build a Proxmox lab on `Docker03.local`
+- Centralized control plane for managing Docker01, Docker02, and Docker03 from a single interface
+
+---
+
+## Future Ideas
+
+- A public-facing Docker host for selectively publishing workloads to the internet  
+  - Candidates include Tandoor once stabilized
+- A public mailing list / listserv for my car club
+- Splitting out radio-related services into a separate **HamLab** repository, hosted on `Docker02.local`
+
+---
+
+This lab is very much an evolving project. The goal is to balance learning, reliability, and documentation while keeping everything reproducible and understandable.
