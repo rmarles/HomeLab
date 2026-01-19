@@ -23,6 +23,7 @@ Upcoming \ Plans
 * Shlink
 * Linkwarden
 * Proxmox Lab on Docker03.local
+* Control Pane - managing Docker01, 02 and 03 some the same instance
 
 I am considering making a public facing instance for publishing workloads to the internet.  I may move stuff like Tandoor to the edge once I get it working.
 
