@@ -231,9 +231,6 @@ Definition of done:
    - NetBox → Oxidized device list assist
    - Always reversible, always diffable
 
-Definition of done:
-- Automation accelerates order, not chaos.
-
 ---
 
 ## 8) Guardrails for future automation
